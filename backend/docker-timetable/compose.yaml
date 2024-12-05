@@ -1,0 +1,52 @@
+services:
+    app:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: timetable_php
+        working_dir: /var/www/
+        volumes:
+            - ../:/var/www
+        networks:
+            - timetable
+
+    nginx:
+        image: nginx:latest
+        container_name: timetable_nginx
+        restart: always
+        volumes:
+            - ./nginx/:/etc/nginx/conf.d/
+            - ../:/var/www
+        depends_on:
+            - app
+        ports:
+            - 8006:80
+        networks:
+            - timetable
+
+    mysql:
+        image: mysql:latest
+        container_name: timetable_mysql
+        restart: always
+        networks:
+            - timetable
+        volumes:
+            - ../storage/mysql:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_ROOT_PASSWORD: root
+
+    swagger-editor:
+      image: swaggerapi/swagger-editor
+      container_name: timetable_swagger_editor
+      ports:
+        - 8090:8080
+
+    swagger-ui:
+      image: swaggerapi/swagger-ui
+      container_name: timetable_swagger_ui
+      ports:
+        - 8080:8080
+networks:
+    timetable:
+        driver: bridge
